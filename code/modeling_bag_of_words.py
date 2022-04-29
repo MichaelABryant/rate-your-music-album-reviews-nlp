@@ -6,6 +6,7 @@ from sklearn.preprocessing import OneHotEncoder
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import regularizers
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 
 # Load dataset.
 df = pd.read_csv('../output/eda_and_cleaning/ok_computer_reviews_cleaned.csv')
@@ -19,7 +20,8 @@ X_train, X_valid_test, y_train, y_valid_test = train_test_split(X, y, stratify=y
 X_valid, X_test, y_valid, y_test = train_test_split(X_valid_test, y_valid_test, stratify=y_valid_test, test_size=0.50, random_state=1)
 
 # Retrieve vocabulary from training reviews.
-text_vectorization = TextVectorization(max_tokens = 13010, output_mode="multi_hot")
+max_tokens = 10000
+text_vectorization = TextVectorization(ngrams=2, max_tokens = max_tokens, output_mode="tf_idf")
 text_vectorization.adapt(X_train)
 
 # Vectorize reviews.
@@ -39,11 +41,16 @@ y_valid.shape
 y_test = enc.transform(y_test.values.reshape(-1,1)).toarray()
 y_test.shape
 
-def get_model(max_tokens=13010, hidden_dim=16):
+
+def get_model(max_tokens=max_tokens, hidden_dim=256/4):
     inputs = keras.Input(shape=(max_tokens,))
     x = layers.Dense(hidden_dim, activation='relu', kernel_regularizer=regularizers.L1L2(l1=1e-2, l2=1e-2),
                      bias_regularizer=regularizers.L2(1e-2),
                      activity_regularizer=regularizers.L2(1e-2))(inputs)
+    x= layers.Dropout(0.7)(x)
+    x = layers.Dense(hidden_dim, activation='relu', kernel_regularizer=regularizers.L1L2(l1=1e-2, l2=1e-2),
+                     bias_regularizer=regularizers.L2(1e-2),
+                     activity_regularizer=regularizers.L2(1e-2))(x)
     x= layers.Dropout(0.7)(x)
     outputs = layers.Dense(10,activation="softmax")(x)
     model = keras.Model(inputs, outputs)
@@ -54,13 +61,27 @@ def get_model(max_tokens=13010, hidden_dim=16):
 
 model = get_model()
 model.summary()
-callbacks = [
-    keras.callbacks.ModelCheckpoint("../output/modeling/bag-of-words/binary_1gram.keras",
-                                    save_best_only=True)]
+
+early_stopping = EarlyStopping(monitor='val_loss',
+                               min_delta=0.001,
+                               restore_best_weights=True,
+                               patience=1)
+
+reduce_lr = ReduceLROnPlateau(monitor='val_loss',
+                                factor=0.5,
+                                patience=0,
+                                verbose=1)
+
+model_checkpoint = ModelCheckpoint("../output/modeling/bag-of-words/model.keras",
+                                   save_best_only=True)
+
+
+callbacks = [early_stopping, reduce_lr, model_checkpoint]
+
 history = model.fit(
     x = X_train,
     y = y_train,
-    epochs=10,
+    epochs=100,
     callbacks=callbacks,
     validation_data = [X_valid,y_valid])
 
