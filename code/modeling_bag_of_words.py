@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import TextVectorization
 from sklearn.preprocessing import OneHotEncoder
@@ -7,6 +9,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import regularizers
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
+from sklearn import metrics
 
 # Load dataset.
 df = pd.read_csv('../output/eda_and_cleaning/ok_computer_reviews_cleaned.csv')
@@ -92,4 +95,12 @@ ax[0].plot(result[['accuracy','val_accuracy']])
 ax[0].set_title("Accuracy")
 ax[1].plot(result[['loss','val_loss']])
 ax[1].set_title("Loss")
+plt.show()
+
+y_pred = model.predict(X_test)
+array = metrics.confusion_matrix(y_test.argmax(axis=1), y_pred.argmax(axis=1))
+df_cm = pd.DataFrame(array, np.linspace(0.5,5,10), np.linspace(0.5,5,10))
+sns.set(font_scale=1.4) # for label size
+sns.heatmap(df_cm, annot=True, annot_kws={"size": 16})
+
 plt.show()
