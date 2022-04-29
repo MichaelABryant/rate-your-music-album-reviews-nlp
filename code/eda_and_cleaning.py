@@ -5,7 +5,6 @@ from ast import literal_eval
 import contractions
 from googletrans import Translator
 import re
-# import spacy
 
 # Load dataset.
 df = pd.read_csv('../ok_computer_reviews.csv')
@@ -111,19 +110,6 @@ plt.show()
 df['Rating'] = df['Rating'].fillna('0.50')
 
 df.info()
-
-# nlp = spacy.load('en_core_web_sm')
-
-# doc = nlp(df['Review'][0])
-
-# df_temp = pd.DataFrame()
-
-# for token in doc:
-#     df_temp = df_temp.append([[token.text, token.lemma_, token.pos_, token.tag_, token.dep_, token.shape_, token.is_alpha, token.is_stop]]);
-    
-# df_temp.columns= ["text","lemma","pos","tag","dep","shape","is_alpha","is_stop"]
-# df_temp = df_temp.reset_index(drop=True)
-# df_temp
 
 # Export to csv.
 df.to_csv('../output/eda_and_cleaning/ok_computer_reviews_cleaned.csv', index=False)
