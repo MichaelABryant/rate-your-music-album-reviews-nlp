@@ -55,7 +55,7 @@ def get_model(max_tokens=13010, hidden_dim=16):
 model = get_model()
 model.summary()
 callbacks = [
-    keras.callbacks.ModelCheckpoint("binary_1gram.keras",
+    keras.callbacks.ModelCheckpoint("../output/modeling/bag-of-words/binary_1gram.keras",
                                     save_best_only=True)]
 history = model.fit(
     x = X_train,
