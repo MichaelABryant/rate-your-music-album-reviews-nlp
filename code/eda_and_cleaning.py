@@ -107,9 +107,11 @@ plt.ylabel('Total Review Length')
 plt.savefig('../output/eda_and_cleaning/barplot_rating_sum.jpg', bbox_inches='tight')
 plt.show()
 
-df['Rating'] = df['Rating'].fillna('0.50')
+df['Rating'] = df['Rating'].fillna('0.50').astype(str)
 
 df.info()
+
+df['Rating'].unique()
 
 # Export to csv.
 df.to_csv('../output/eda_and_cleaning/ok_computer_reviews_cleaned.csv', index=False)
