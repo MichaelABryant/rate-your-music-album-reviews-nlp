@@ -14,6 +14,9 @@ from sklearn import metrics
 # Load dataset.
 df = pd.read_csv('../output/eda_and_cleaning/ok_computer_reviews_cleaned.csv')
 
+df['Rating'].value_counts()
+df['Rating'].value_counts()/len(df)
+
 X = df['Review'].copy()
 y = df['Rating'].copy().astype(str)
 
@@ -45,7 +48,7 @@ y_test = enc.transform(y_test.values.reshape(-1,1)).toarray()
 y_test.shape
 
 
-def get_model(max_tokens=max_tokens, hidden_dim=256/4):
+def get_model(max_tokens=max_tokens, hidden_dim=256):
     inputs = keras.Input(shape=(max_tokens,))
     x = layers.Dense(hidden_dim, activation='relu', kernel_regularizer=regularizers.L1L2(l1=1e-2, l2=1e-2),
                      bias_regularizer=regularizers.L2(1e-2),
@@ -102,5 +105,4 @@ array = metrics.confusion_matrix(y_test.argmax(axis=1), y_pred.argmax(axis=1))
 df_cm = pd.DataFrame(array, np.linspace(0.5,5,10), np.linspace(0.5,5,10))
 sns.set(font_scale=1.4) # for label size
 sns.heatmap(df_cm, annot=True, annot_kws={"size": 16})
-
 plt.show()

@@ -2,29 +2,67 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.utils import resample
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import TextVectorization
 from sklearn.preprocessing import OneHotEncoder
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras import regularizers
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from sklearn import metrics
 
 # Load dataset.
 df = pd.read_csv('../output/eda_and_cleaning/ok_computer_reviews_cleaned.csv')
 
+df['Rating'].value_counts()
+df['Rating'].value_counts()/len(df)
+
+
+def up_sampler(df,minority_classes, majority_class):
+     
+    temp_majority = df[df["Rating"] == majority_class]
+    
+    upsampled_df = pd.DataFrame(temp_majority)
+    
+    for idx, val in enumerate(minority_classes):
+        
+        temp_minority = df[df["Rating"] == val]
+        
+        minority_upsample = resample(temp_minority,
+                     replace=True,
+                     n_samples=len(temp_majority),
+                     random_state=1)
+        
+        upsampled_df = upsampled_df.append(minority_upsample, ignore_index=True)
+    
+    return upsampled_df
+
 X = df['Review'].copy()
 y = df['Rating'].copy().astype(str)
-
-y.unique()
 
 X_train, X_valid_test, y_train, y_valid_test = train_test_split(X, y, stratify=y, test_size=0.20, random_state=1)
 X_valid, X_test, y_valid, y_test = train_test_split(X_valid_test, y_valid_test, stratify=y_valid_test, test_size=0.50, random_state=1)
 
+
+df_train = pd.concat([X_train, y_train], axis=1)
+df_train
+
+majority_class = str(5.0)
+minority_classes = df['Rating'].unique().astype(str)
+minority_classes = minority_classes[minority_classes != majority_class]
+
+majority_class
+minority_classes
+
+X_train = up_sampler(df_train,minority_classes, majority_class)
+y_train = X_train.pop('Rating')
+
+y_train
+
 # Retrieve vocabulary from training reviews.
 max_tokens = 10000
-max_length = 600
-text_vectorization = TextVectorization(max_tokens = max_tokens, output_mode="int", output_sequence_length=max_length)
+text_vectorization = TextVectorization(ngrams=2, max_tokens = max_tokens, output_mode="tf_idf")
 text_vectorization.adapt(X_train)
 
 # Vectorize reviews.
@@ -43,7 +81,6 @@ y_valid = enc.transform(y_valid.values.reshape(-1,1)).toarray()
 y_valid.shape
 y_test = enc.transform(y_test.values.reshape(-1,1)).toarray()
 y_test.shape
-
 
 
 inputs = keras.Input(shape=(None,), dtype='int64')
