@@ -6,16 +6,16 @@ import numpy as np
 from selenium.common.exceptions import NoSuchElementException 
 
 #function for requesting number of reviews
-def get_album_reviews(num_reviews, verbose):
+def get_album_reviews(review_page_url, num_reviews, verbose):
     
     '''Gathers albums as a dataframe, scraped from rateyourmusic.com'''   
     
     #initialize chrome driver
-    driver = webdriver.Chrome(executable_path="C:/Users/malex/Desktop/rateyourmusic/chromedriver.exe")
+    driver = webdriver.Chrome(executable_path="C:/Users/malex/Desktop/rate_your_music_nlp/scraper/chromedriver.exe")
     driver.set_window_size(1120, 1000)
 
     #url to begin scraping from
-    url = 'https://rateyourmusic.com/release/album/pink-floyd/the-dark-side-of-the-moon/reviews/1/'
+    url = review_page_url
     driver.get(url)
     
     #wait for browser to open

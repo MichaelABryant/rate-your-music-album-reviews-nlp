@@ -1,9 +1,8 @@
 import scraper_reviews as rym
 import pandas as pd
 
-df = rym.get_album_reviews(1548,0)
+df = rym.get_album_reviews("https://rateyourmusic.com/release/album/pink-floyd/wish-you-were-here/reviews/1/", 1015,0)
 
-compression_opts = dict(method='zip', archive_name='dsotm_reviews.csv')  
-df.to_csv('dsotm_reviews.zip', index=False, compression=compression_opts)
+df.to_csv('../scraped_reviews/wish_you_were_here_reviews.csv', index=False)
 
 
